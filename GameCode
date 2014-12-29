@@ -1,0 +1,233 @@
+#include<iostream>
+#include<iomanip>
+#include<cstdlib>
+#include<conio.h>
+#include<ctime>
+
+using namespace std;
+
+void initializeBoard(char board[20][20], int dimensions, int difficulty){//This function simply initializes the board state	
+	
+	int i, j, k = 1, numTrees;
+
+		for (i = 0; i < dimensions; i++){
+			for (j = 0; j < dimensions; j++){
+				board[i][j] = '-';
+			}
+		}	
+		srand(time(0));//Use srand to have random tree locations each time
+
+	if (difficulty == 1){
+		numTrees = (dimensions*dimensions)/5; //20% of the board will be covered in trees
+		while (k <= numTrees){
+			i = rand() % dimensions;//Use rand function to get random position on board to place tree
+			j = rand() % dimensions;
+			board[i][j] = 'T';
+			k++;
+		}
+	}
+	if (difficulty == 2){
+		numTrees = (dimensions*dimensions) * 2 / 5; //40% of the board will be covered in trees
+		while (k <= numTrees){
+			i = rand() % dimensions;
+			j = rand() % dimensions;
+				board[i][j] = 'T';
+				k++;
+		}
+	}
+	if (difficulty == 3){
+		numTrees = (dimensions*dimensions) / 2; //50% of the board will be covered in trees
+		while (k <= numTrees){
+			i = rand() % dimensions;
+			j = rand() % dimensions;
+			board[i][j] = 'T';
+			k++;
+		}
+	}
+	board[dimensions - 1][dimensions - 1] = 'X';//Place finishing position at bottom right corner
+	board[0][0] = 'A';//Place starting position at top left corner
+}
+
+void printBoard(char board[20][20], int dimensions){//This function prints out the current board state
+	for (int i = 0; i < dimensions; i++){
+		for (int j = 0; j < dimensions; j++){
+		cout <<	board[i][j];
+		}
+		cout << endl;
+	}
+	cout << endl << endl;
+}
+void chainsaws(char board[20][20], int dimensions, int x, int y, int *p){
+	if (*p == 0){//If the number of chainsaws is 0
+		cout << endl << "Out of chainsaws." << endl;
+	}
+	else {
+		if (board[y + 1][x] == 'T')
+			board[y + 1][x] = '-';//Cut the tree below
+		if (board[y - 1][x] == 'T')
+			board[y - 1][x] = '-';//Cut the tree above
+		if (board[y][x + 1] == 'T')
+			board[y][x + 1] = '-';//Cut the tree to the right
+		if (board[y][x - 1] == 'T')
+			board[y][x - 1] = '-';//Cut the tree to the left
+		*p -= 1;
+		cout << endl << *p << " chainsaws left." << endl;
+	}
+}
+int validateMoves(char board[20][20], int dimensions, int x, int y, char direction){//Function that checks if the move made is valid or not
+	
+	switch (direction){
+	case 'U':{//If user wants to go up
+		if (y - 1 < 0)
+			return -10;
+		else if (board[y - 1][x] == 'T')
+			return 10;
+		else if (board[y - 1][x] == 'X'){
+			return 10000;		
+			}
+		else board[y - 1][x] = 'A';
+		break;
+	}
+	case 'D':{//If user wants to go down
+		if (y + 1 >= dimensions)
+			return -10;
+		else if (board[y + 1][x] == 'T')
+			return 10;
+		else if (board[y + 1][x] == 'X')			
+			return 10000;	
+		else board[y + 1][x] = 'A';
+		break;
+	}
+	case 'L':{//If user wants to go left
+		if (x - 1 < 0)
+			return -10;
+		else if (board[y][x - 1] == 'T')
+			return 10;
+		else if (board[y][x - 1] == 'X')	
+			return 10000;	
+		else board[y][x - 1] = 'A';
+		break;
+	}
+	case 'R':{//If user wants to go right
+		if (x + 1 >= dimensions)
+			return -10;
+		else if (board[y][x + 1] == 'T')
+			return 10;
+		else if (board[y][x + 1] == 'X')	
+			return 10000;		
+		else board[y][x + 1] = 'A';	
+		break;
+	  }				 
+	}
+	
+	board[y][x] = '-';//Put a '-' in the old position of the A
+	return 5;
+}
+
+bool playerMoves(char board[20][20], int dimensions, int *pValidMoves, int *numChainsaws){ //Function responsible for the player moves
+	
+	bool win = false;
+	while (!win){
+		int i = 0, j = 0;//i represents y-position, j represents x-position
+
+		while (board[i][j] != 'A'){//Loop used to find the current location of the 'A'
+			j++;
+			if (j == dimensions){
+				j = 0;
+				i++;
+				if (i == dimensions)
+					break;
+			}
+		}
+	moveInput:
+		char move;
+		int move1 = _getch();//Get user input from user 
+		if (move1 == 119)
+			move = 'U';
+		else if (move1 == 100)
+			move = 'R';
+		else if (move1 == 115)
+			move = 'D';
+		else if (move1 == 97)
+			move = 'L';
+		else if (move1 == 99){
+			move = 'C';
+			chainsaws(board, dimensions, j, i, numChainsaws);
+		}
+		else if (move1 == 113){//If the user presses q
+			cout << endl << "Quitting..." << endl;
+			return false;
+		}
+		else {
+		invalidMove:
+			cout << endl << "Invalid move" << endl;
+			goto moveInput;//Prompt user for input again
+		}
+		if (move != 'C') {
+		if (validateMoves(board, dimensions, j, i, move) < 0)//If they try to go out of the game boundaries
+			goto invalidMove;
+		else if (validateMoves(board, dimensions, j, i, move) == 10){//If user hits a tree
+			cout << endl << "You lose!" << endl;
+			*pValidMoves = 0;
+			return win;//Returns a false
+		}
+		else if (validateMoves(board, dimensions, j, i, move) == 5){
+			(*pValidMoves) += 1;
+			cout << endl << *pValidMoves << " valid moves made." << endl;
+		}
+		else if (validateMoves(board, dimensions, j, i, move) > 10){//If the user wins (makes it to the X)
+			board[i][j] = '-';
+			board[dimensions - 1][dimensions - 1] = 'A';
+			printBoard(board, dimensions);
+			cout << endl << "You win!!! " << *pValidMoves << " total valid moves made." << endl << endl;
+			*pValidMoves = 0;
+			win = true;
+			return win;//Returns a true
+		}
+	}
+		printBoard(board, dimensions);//Print the board after executing the move
+	}
+	
+}
+
+int main(){
+	int highScore = 0;
+beginning:
+	int dimensions, difficulty, validMoves = 0, numChainSaws = 3, playerScore = 0;//Declaring variables
+	char board[20][20];
+	char playAgain;
+
+	cout << endl << "Welcome to Treasure." << endl << endl << "Use WASD keys to play. Press 'c' to use a chainsaw.";
+	    cout << endl << "Press any numbers greater than 20 or <=0 to quit" << endl << endl;
+		cout << "Choose board dimensions (no bigger dimensions than 20)" << endl << endl;
+		cin >> dimensions;
+		if (dimensions <= 0 || dimensions > 20)//If they enter an invalid number
+			goto goodbye;
+	cout << "Choose difficulty level (any other number to quit)" << endl << endl << "Easy: (1)   Medium (2)   Hard (3): ";
+	cin >> difficulty;
+
+	if (difficulty > 3 || difficulty <= 0){
+		goto goodbye;	//Quit the program
+	}
+	else{
+		initializeBoard(board, dimensions, difficulty);//Initialize a new game with the given difficulty
+		printBoard(board, dimensions);//Print the initial board
+
+		if (playerMoves(board, dimensions, &validMoves, &numChainSaws)){
+		playerScore = (dimensions*dimensions) - validMoves + (5 * (difficulty+numChainSaws));//Random scoring algorithm
+		if (playerScore < 0)//If the score is -ve
+			playerScore = 0;//make the score 0
+		}
+		if (playerScore > highScore)//If the user score is higher than the high score
+			highScore = playerScore;//This is the new high score		
+	}
+	cout << endl << "Your score: " << playerScore << " High score: " << highScore << " Play again? (Y) or (N)";
+	cin >> playAgain;//Prompt user to play again and take input
+	if (playAgain == 'Y' || playAgain == 'y')
+		goto beginning;
+	else goto goodbye;
+	goodbye:
+	cout << "You chose to quit. Goodbye" << endl;
+	system("pause");
+	return 0;
+}
