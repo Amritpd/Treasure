@@ -6,7 +6,7 @@
 
 using namespace std;
 
-void initializeBoard(char board[20][20], int dimensions, int difficulty){//This function simply initializes the board state	
+void initializeBoard(char board[22][22], int dimensions, int difficulty){//This function simply initializes the board state	
 	
 	int i, j, k = 1, numTrees;
 
@@ -48,7 +48,7 @@ void initializeBoard(char board[20][20], int dimensions, int difficulty){//This 
 	board[0][0] = 'A';//Place starting position at top left corner
 }
 
-void printBoard(char board[20][20], int dimensions){//This function prints out the current board state
+void printBoard(char board[22][22], int dimensions){//This function prints out the current board state
 	for (int i = 0; i < dimensions; i++){
 		for (int j = 0; j < dimensions; j++){
 		cout <<	board[i][j];
@@ -57,7 +57,7 @@ void printBoard(char board[20][20], int dimensions){//This function prints out t
 	}
 	cout << endl << endl;
 }
-void chainsaws(char board[20][20], int dimensions, int x, int y, int *p){
+void chainsaws(char board[22][22], int dimensions, int x, int y, int *p){
 	if (*p == 0){//If the number of chainsaws is 0
 		cout << endl << "Out of chainsaws." << endl;
 	}
@@ -74,7 +74,7 @@ void chainsaws(char board[20][20], int dimensions, int x, int y, int *p){
 		cout << endl << *p << " chainsaws left." << endl;
 	}
 }
-int validateMoves(char board[20][20], int dimensions, int x, int y, char direction){//Function that checks if the move made is valid or not
+int validateMoves(char board[22][22], int dimensions, int x, int y, char direction){//Function that checks if the move made is valid or not
 	
 	switch (direction){
 	case 'U':{//If user wants to go up
@@ -124,7 +124,7 @@ int validateMoves(char board[20][20], int dimensions, int x, int y, char directi
 	return 5;
 }
 
-bool playerMoves(char board[20][20], int dimensions, int *pValidMoves, int *numChainsaws){ //Function responsible for the player moves
+bool playerMoves(char board[22][22], int dimensions, int *pValidMoves, int *numChainsaws){ //Function responsible for the player moves
 	
 	bool win = false;
 	while (!win){
@@ -194,14 +194,14 @@ int main(){
 	int highScore = 0;
 beginning:
 	int dimensions, difficulty, validMoves = 0, numChainSaws = 3, playerScore = 0;//Declaring variables
-	char board[20][20];
+	char board[22][22];
 	char playAgain;
 
 	cout << endl << "Welcome to Treasure." << endl << endl << "Use WASD keys to play. Press 'c' to use a chainsaw.";
-	    cout << endl << "Press any numbers greater than 20 or <=0 to quit" << endl << endl;
-		cout << "Choose board dimensions (no bigger dimensions than 20)" << endl << endl;
+	    cout << endl << "Press any numbers greater than 22 to quit" << endl << endl;
+		cout << "Choose board dimensions (no bigger dimensions than 22)" << endl << endl;
 		cin >> dimensions;
-		if (dimensions <= 0 || dimensions > 20)//If they enter an invalid number
+		if (dimensions <= 0 || dimensions > 22)//If they enter an invalid number
 			goto goodbye;
 	cout << "Choose difficulty level (any other number to quit)" << endl << endl << "Easy: (1)   Medium (2)   Hard (3): ";
 	cin >> difficulty;
@@ -214,7 +214,7 @@ beginning:
 		printBoard(board, dimensions);//Print the initial board
 
 		if (playerMoves(board, dimensions, &validMoves, &numChainSaws)){
-		playerScore = (dimensions*dimensions) - validMoves + (5 * (difficulty+numChainSaws));//Random scoring algorithm
+		playerScore = ((dimensions+difficulty)*15/2) + (5 * (difficulty+numChainSaws)) - (validMoves*3/2);//Random scoring algorithm
 		if (playerScore < 0)//If the score is -ve
 			playerScore = 0;//make the score 0
 		}
