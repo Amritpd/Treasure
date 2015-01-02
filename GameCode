@@ -6,9 +6,12 @@
 
 using namespace std;
 
-void initializeBoard(char board[22][22], int dimensions, int difficulty){//This function simply initializes the board state	
+void initializeBoard(char board[40][40], int dimensions, int difficulty){//This function simply initializes the board state	
 	
 	int i, j, k = 1, numTrees;
+
+
+
 
 		for (i = 0; i < dimensions; i++){
 			for (j = 0; j < dimensions; j++){
@@ -48,7 +51,7 @@ void initializeBoard(char board[22][22], int dimensions, int difficulty){//This 
 	board[0][0] = 'A';//Place starting position at top left corner
 }
 
-void printBoard(char board[22][22], int dimensions){//This function prints out the current board state
+void printBoard(char board[40][40], int dimensions){//This function prints out the current board state
 	for (int i = 0; i < dimensions; i++){
 		for (int j = 0; j < dimensions; j++){
 		cout <<	board[i][j];
@@ -57,7 +60,7 @@ void printBoard(char board[22][22], int dimensions){//This function prints out t
 	}
 	cout << endl << endl;
 }
-void chainsaws(char board[22][22], int dimensions, int x, int y, int *p){
+void chainsaws(char board[40][40], int dimensions, int x, int y, int *p){
 	if (*p == 0){//If the number of chainsaws is 0
 		cout << endl << "Out of chainsaws." << endl;
 	}
@@ -74,7 +77,7 @@ void chainsaws(char board[22][22], int dimensions, int x, int y, int *p){
 		cout << endl << *p << " chainsaws left." << endl;
 	}
 }
-int validateMoves(char board[22][22], int dimensions, int x, int y, char direction){//Function that checks if the move made is valid or not
+int validateMoves(char board[40][40], int dimensions, int x, int y, char direction){//Function that checks if the move made is valid or not
 	
 	switch (direction){
 	case 'U':{//If user wants to go up
@@ -124,7 +127,7 @@ int validateMoves(char board[22][22], int dimensions, int x, int y, char directi
 	return 5;
 }
 
-bool playerMoves(char board[22][22], int dimensions, int *pValidMoves, int *numChainsaws){ //Function responsible for the player moves
+bool playerMoves(char board[40][40], int dimensions, int *pValidMoves, int *numChainsaws){ //Function responsible for the player moves
 	
 	bool win = false;
 	while (!win){
@@ -190,44 +193,61 @@ bool playerMoves(char board[22][22], int dimensions, int *pValidMoves, int *numC
 	
 }
 
-int main(){
-	int highScore = 0;
-beginning:
-	int dimensions, difficulty, validMoves = 0, numChainSaws = 3, playerScore = 0;//Declaring variables
-	char board[22][22];
+int evaluateScore(int difficulty, int dimensions, int numChainSaws, int validMoves, int *highScorePointer){//Function calculates player score
+	int playerScore = ((difficulty + dimensions) * 15 / 2) + (5 * (difficulty + numChainSaws)) - (validMoves * 3 / 2);//Random scoring algorithm
+	
+	if (playerScore < 0)//If the score is -ve
+		playerScore = 0;//make the score 0
+	else if (playerScore > *highScorePointer)//If the user score is higher than the high score
+		*highScorePointer = playerScore;//This is the new high score
+
+	return playerScore;
+}
+
+bool printScore(int playerScore, int highScore){//Function prints both scores
 	char playAgain;
+
+	cout << endl << "Your score: " << playerScore << " High score: " << highScore << " Play again? (Y) or (N)";
+	cin >> playAgain;//Prompt user to play again and take input
+	if (playAgain == 'Y' || playAgain == 'y')
+		return true;
+	else return false;
+}
+
+int main(){
+	int highScore = 0, gameLoop = 1;//Use gameLoop to enter the loop
+mainmenu:
+	while (gameLoop == 1){//Loop is broken by break statements throughout the main function
+	int dimensions, difficulty, validMoves = 0, numChainSaws = 3, playerScore = 0;//Declaring variables
+	char board[40][40];//Declaring a 2D character array
 
 	cout << endl << "Welcome to Treasure." << endl << endl << "Use WASD keys to play. Press 'c' to use a chainsaw.";
 	    cout << endl << "Press any numbers greater than 22 to quit" << endl << endl;
 		cout << "Choose board dimensions (no bigger dimensions than 22)" << endl << endl;
 		cin >> dimensions;
 		if (dimensions <= 0 || dimensions > 22)//If they enter an invalid number
-			goto goodbye;
+			break;//Break the loop
+	
 	cout << "Choose difficulty level (any other number to quit)" << endl << endl << "Easy: (1)   Medium (2)   Hard (3): ";
 	cin >> difficulty;
 
 	if (difficulty > 3 || difficulty <= 0){
-		goto goodbye;	//Quit the program
+		break;	//Quit the program
 	}
 	else{
 		initializeBoard(board, dimensions, difficulty);//Initialize a new game with the given difficulty
 		printBoard(board, dimensions);//Print the initial board
 
-		if (playerMoves(board, dimensions, &validMoves, &numChainSaws)){
-		playerScore = ((dimensions+difficulty)*15/2) + (5 * (difficulty+numChainSaws)) - (validMoves*3/2);//Random scoring algorithm
-		if (playerScore < 0)//If the score is -ve
-			playerScore = 0;//make the score 0
-		}
-		if (playerScore > highScore)//If the user score is higher than the high score
-			highScore = playerScore;//This is the new high score		
+		if (playerMoves(board, dimensions, &validMoves, &numChainSaws)){//If the player wins
+			playerScore = evaluateScore(difficulty, dimensions, numChainSaws, validMoves, &highScore);//Evaluate the player's score
+		}			
 	}
-	cout << endl << "Your score: " << playerScore << " High score: " << highScore << " Play again? (Y) or (N)";
-	cin >> playAgain;//Prompt user to play again and take input
-	if (playAgain == 'Y' || playAgain == 'y')
-		goto beginning;
-	else goto goodbye;
-	goodbye:
+	if (printScore(playerScore, highScore))//If the user wants to play again
+		goto mainmenu;//Go back to the game's main menu
+	else break;//Else quit the program
+	}	
 	cout << "You chose to quit. Goodbye" << endl;
 	system("pause");
+
 	return 0;
 }
