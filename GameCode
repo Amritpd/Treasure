@@ -215,12 +215,12 @@ bool printScore(int playerScore, int highScore){//Function prints both scores
 
 int main(){
 	int highScore = 0, gameLoop = 1;//Use gameLoop to enter the loop
-mainmenu:
+	
 	while (gameLoop == 1){//Loop is broken by break statements throughout the main function
 	int dimensions, difficulty, validMoves = 0, numChainSaws = 3, playerScore = 0;//Declaring variables
 	char board[40][40];//Declaring a 2D character array
 
-	cout << endl << "Welcome to Treasure." << endl << endl << "Use WASD keys to play. Press 'c' to use a chainsaw.";
+	cout << endl << "Welcome to Treasure." << endl << endl << "Use WASD keys to play. Press 'c' to use a chainsaw.";//main menu
 	    cout << endl << "Press any numbers greater than 22 to quit" << endl << endl;
 		cout << "Choose board dimensions (no bigger dimensions than 22)" << endl << endl;
 		cin >> dimensions;
@@ -241,9 +241,8 @@ mainmenu:
 			playerScore = evaluateScore(difficulty, dimensions, numChainSaws, validMoves, &highScore);//Evaluate the player's score
 		}			
 	}
-	if (printScore(playerScore, highScore))//If the user wants to play again
-		goto mainmenu;//Go back to the game's main menu
-	else break;//Else quit the program
+	if (!printScore(playerScore, highScore))//If the user doesn't want to play again
+		 break;//quit the program
 	}	
 	cout << "You chose to quit. Goodbye" << endl;
 	system("pause");
